@@ -2,6 +2,8 @@ package com.example.weatherapp;
 
 import android.app.ProgressDialog;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,11 +27,12 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
     RequestQueue requestQueue;
-    String jsonURL = "https://api.openweathermap.org/data/2.5/weather?lat=27.900383&lon=78.072281&units=metric&appid=cecfaf87466e5f6516ba6985d3dfef50";
-    TextView cityName, temperature, weatherR, windSpeed, sunRise, sunSet;
-    String cityname, temp, weatherr, windspeed;
-    long sunrise, sunset;
-    ImageView imageView;
+    EditText your_city;
+    String jsonURL;
+    TextView time, cityName,forecast, country, windSpeed, sunRise, sunSet, temperature, humidity,maxTemp, minTemp, pressure;
+    String CITY, CityName, Country, Temperature, Forecast, WindSpeed,Humidity,MaxTemp, MinTemp, Pressure;
+    long SunRise, SunSet, updatedAt;
+    ImageView search;
     ProgressDialog progressDialog;
 
     @Override
@@ -38,56 +41,92 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         cityName = findViewById(R.id.cityName);
+        time= findViewById(R.id.time);
+        country = findViewById(R.id.country);
+        forecast = findViewById(R.id.forecast);
+        windSpeed = findViewById(R.id.wind_speed);
+        humidity = findViewById(R.id.humidity);
+        sunRise = findViewById(R.id.sunrises);
         temperature = findViewById(R.id.temperature);
-        weatherR = findViewById(R.id.weather);
-        windSpeed = findViewById(R.id.windSpeed);
-        sunRise = findViewById(R.id.sunRise);
-        sunSet = findViewById(R.id.sunSet);
+        minTemp = findViewById(R.id.min_temp);
+        maxTemp = findViewById(R.id.max_temp);
+        pressure =findViewById(R.id.pressure);
+        sunSet = findViewById(R.id.sunsets);
+        search = findViewById(R.id.search);
+        your_city = findViewById(R.id.your_city);
 
-        progressDialog = new ProgressDialog(this);
-        progressDialog.setTitle("Please Wait..");
-        progressDialog.setMessage("Info uploading..");
-        progressDialog.show();
+        search.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                CITY = your_city.getText().toString().trim();
+                jsonURL = "https://api.openweathermap.org/data/2.5/weather?q="+CITY+"&units=metric&appid=cecfaf87466e5f6516ba6985d3dfef50";
+                weatherInfo();
+                your_city.setText("");
+            }
+        });
 
-        requestQueue = Volley.newRequestQueue(this);
+    }
+
+    public void weatherInfo(){
+
+        requestQueue = Volley.newRequestQueue(MainActivity.this);
 
         StringRequest request = new StringRequest(Request.Method.GET, jsonURL,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
+                        progressDialog = new ProgressDialog(MainActivity.this);
+                        progressDialog.setTitle("Please Wait..");
+                        progressDialog.setMessage("Info uploading..");
+                        progressDialog.show();
 
                         try {
                             JSONObject jsonObject = new JSONObject(response);
 
 
                             JSONObject wind = (jsonObject.getJSONObject("wind"));
-                            windspeed = wind.getString("speed");
-                            windSpeed.setText(windspeed + " m/s");
+                            WindSpeed = wind.getString("speed");
+                            windSpeed.setText(WindSpeed + " m/s");
 
                             JSONObject weather = jsonObject.getJSONArray("weather").getJSONObject(0);
-                            weatherr = weather.getString("description");
-                            weatherR.setText(weatherr);
+                            Forecast = weather.getString("description");
+                            forecast.setText(Forecast);
 
                             JSONObject main = jsonObject.getJSONObject("main");
-                            temp = main.getString("temp");
-                            temperature.setText(temp + "°C");
+                            Temperature = main.getString("temp");
+                            temperature.setText(Temperature + "°C");
 
+                            Pressure = main.getString("pressure");
+                            pressure.setText(Pressure);
+
+                            MaxTemp = main.getString("temp_max");
+                            maxTemp.setText(MaxTemp);
+
+                            MinTemp = main.getString("temp_min");
+                            minTemp.setText(MinTemp);
+
+                            Humidity = main.getString("humidity");
+                            humidity.setText(Humidity);
 
                             JSONObject sys = jsonObject.getJSONObject("sys");
-                            sunrise = sys.getLong("sunrise");
-                            sunRise.setText(new SimpleDateFormat("hh:mm a", Locale.ENGLISH).format(new Date(sunrise * 1000)));
-                            sunset = sys.getLong("sunset");
-                            sunSet.setText(new SimpleDateFormat("hh:mm a", Locale.ENGLISH).format(new Date(sunset * 1000)));
+                            SunRise = sys.getLong("sunrise");
+                            sunRise.setText(new SimpleDateFormat("hh:mm a", Locale.ENGLISH).format(new Date(SunRise * 1000)));
 
-                            cityname = jsonObject.getString("name");
-                            cityName.setText(cityname + " , " + sys.getString("country"));
+                            SunSet = sys.getLong("sunset");
+                            sunSet.setText(new SimpleDateFormat("hh:mm a", Locale.ENGLISH).format(new Date(SunSet * 1000)));
+
+                            Country = sys.getString("country");
+                            country.setText(Country);
+
+                            CityName = jsonObject.getString("name");
+                            cityName.setText(CityName);
+
+                            updatedAt = jsonObject.getLong("dt");
+                            String updatedAtText = "Last Updated at: " + new SimpleDateFormat("dd/MM/yyyy hh:mm a", Locale.ENGLISH).format(new Date(updatedAt * 1000));
+                            time.setText(updatedAtText);
+
 
                             progressDialog.cancel();
-
-
-                            String iconcode = weather.getString("icon").trim();
-                            String url = "http://openweathermap.org/img/w/" + iconcode + ".png";
-
 
                         } catch (JSONException e) {
 
