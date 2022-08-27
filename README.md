@@ -1,2 +1,2 @@
 # WeatherApp
-# use your current location for weather forecasting
+# Enter your city name in search box for weather forecasting
