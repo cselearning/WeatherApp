@@ -2,6 +2,7 @@ package com.example.weatherapp;
 
 import android.app.ProgressDialog;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -53,10 +54,16 @@ public class MainActivity extends AppCompatActivity {
         your_city = findViewById(R.id.your_city);
 
         search.setOnClickListener(view -> {
-            CITY = your_city.getText().toString().trim();
-            jsonURL = "https://api.openweathermap.org/data/2.5/weather?q=" + CITY + "&units=metric&appid=cecfaf87466e5f6516ba6985d3dfef50";
-            weatherInfo();
-            your_city.setText("");
+            if(TextUtils.isEmpty(your_city.getText().toString().trim())){
+                your_city.setError("Enter City Name");
+                your_city.requestFocus();
+            }else{
+                CITY = your_city.getText().toString().trim();
+                jsonURL = "https://api.openweathermap.org/data/2.5/weather?q=" + CITY + "&units=metric&appid=cecfaf87466e5f6516ba6985d3dfef50";
+                weatherInfo();
+                your_city.setText("");
+            }
+
         });
 
     }
